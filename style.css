@@ -1,0 +1,22 @@
+body {
+  background-color: #13161c;
+}
+
+button {
+  margin: 1rem auto;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  background-color: #e4e4e4;
+  display: block;
+  cursor: pointer;
+}
+button:hover {
+  background-color: rgba(228, 228, 228, .8);
+}
+
+canvas {
+  margin: 0 auto;
+  border: 1px solid rgb(170, 170, 170);
+  display: block;
+}
