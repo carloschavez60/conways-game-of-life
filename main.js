@@ -29,65 +29,57 @@ document.querySelector('button').addEventListener('click', setInitialGameState)
 // set initial state
 
 function setInitialGameState() {
-  for (row = 0; row < GAME_SPACE_PIXEL_WIDTH; row++) {
+
+  // entities
+
+  let cells = []
+  for (let row = 0; row < GAME_SPACE_PIXEL_WIDTH; row++) {
     cells[row] = []
-    for (col = 0; col < GAME_SPACE_PIXEL_WIDTH; col++) {
+    for (let col = 0; col < GAME_SPACE_PIXEL_WIDTH; col++) {
       cells[row][col] = {
         isAlive: false,
         hasToChange: false,
       }
     }
   }
+
   game.generation = 0
 
-  populate()
+  populate(cells)
 
   // draw world
-  drawGame()
+  drawGame(cells)
 
   // call first main loop
   if (!game.mainLoopIsRunning) {
-    setTimeout(mainLoop, GAME_FRAME_DURATION)
+    setTimeout(() => mainLoop(cells), GAME_FRAME_DURATION)
     game.mainLoopIsRunning = true
   }
 }
 
 // main loop
 
-function mainLoop() {
+function mainLoop(cells) {
   // check world
-  checkGeneration()
+  checkGeneration(cells)
 
   // change world
-  changeGeneration()
+  changeGeneration(cells)
   game.generation++
 
   // draw world
-  drawGame()
+  drawGame(cells)
 
-  setTimeout(mainLoop, GAME_FRAME_DURATION)
-}
-
-// entities
-
-let cells = []
-for (row = 0; row < GAME_SPACE_PIXEL_WIDTH; row++) {
-  cells[row] = []
-  for (col = 0; col < GAME_SPACE_PIXEL_WIDTH; col++) {
-    cells[row][col] = {
-      isAlive: false,
-      hasToChange: false,
-    }
-  }
+  setTimeout(() => mainLoop(cells), GAME_FRAME_DURATION)
 }
 
 // systems
 
 // check program state
 
-function checkGeneration() {
-  for (row = 0; row < GAME_SPACE_PIXEL_WIDTH; row++) {
-    for (col = 0; col < GAME_SPACE_PIXEL_WIDTH; col++) {
+function checkGeneration(cells) {
+  for (let row = 0; row < GAME_SPACE_PIXEL_WIDTH; row++) {
+    for (let col = 0; col < GAME_SPACE_PIXEL_WIDTH; col++) {
       neighbors = 0
       // kill edge cells
       if (row-1>0 && row+1<GAME_SPACE_PIXEL_WIDTH && col-1>0 && col+1<GAME_SPACE_PIXEL_WIDTH) {
@@ -128,9 +120,9 @@ function checkGeneration() {
 
 // change program state
 
-function changeGeneration() {
-  for (row = 0; row < GAME_SPACE_PIXEL_WIDTH; row++) {
-    for (col = 0; col < GAME_SPACE_PIXEL_WIDTH; col++) {
+function changeGeneration(cells) {
+  for (let row = 0; row < GAME_SPACE_PIXEL_WIDTH; row++) {
+    for (let col = 0; col < GAME_SPACE_PIXEL_WIDTH; col++) {
       let cell = cells[row][col]
 
       if (cell.hasToChange) {
@@ -145,14 +137,14 @@ function changeGeneration() {
 
 // drawing system
 
-function drawGame() {
-  drawCells()
+function drawGame(cells) {
+  drawCells(cells)
   drawGenerationText()
 }
 
-function drawCells() {
-  for (row = 0; row < GAME_SPACE_PIXEL_WIDTH; row++) {
-    for (col = 0; col < GAME_SPACE_PIXEL_WIDTH; col++) {
+function drawCells(cells) {
+  for (let row = 0; row < GAME_SPACE_PIXEL_WIDTH; row++) {
+    for (let col = 0; col < GAME_SPACE_PIXEL_WIDTH; col++) {
       if (cells[row][col].isAlive) {
         ctx.fillRect(col * GAME_PIXEL_WIDTH, row * GAME_PIXEL_WIDTH, GAME_PIXEL_WIDTH, GAME_PIXEL_WIDTH)
       } else {
@@ -168,15 +160,16 @@ function drawGenerationText() {
 
 // populate world
 
-function makeCellsAlive(...cellsCoords) {
+function makeCellsAlive(cells, ...cellsCoords) {
   for (let cellCoords of cellsCoords) {
     cells[cellCoords[1]][cellCoords[0]].isAlive = true
   }
 }
 
-function populate() {
+function populate(cells) {
   // block
   makeCellsAlive(
+    cells,
     [4, 8],
     [5, 8],
     [4, 9],
@@ -185,6 +178,7 @@ function populate() {
 
   // blinker
   makeCellsAlive(
+    cells,
     [3, 3],
     [4, 3],
     [5, 3],
@@ -192,6 +186,7 @@ function populate() {
 
   // toad
   makeCellsAlive(
+    cells,
     [20, 3],
     [18, 4],
     [21, 4],
@@ -202,6 +197,7 @@ function populate() {
 
   // ship
   makeCellsAlive(
+    cells,
     [14, 15],
     [15, 15],
     [14, 16],
@@ -212,6 +208,7 @@ function populate() {
 
   // glider
   makeCellsAlive(
+    cells,
     [9, 25],
     [7, 26],
     [9, 26],
@@ -221,6 +218,7 @@ function populate() {
 
   // Gosper glider gun
   makeCellsAlive(
+    cells,
     [42, 20],
     [43, 20],
     [44, 21],
@@ -269,6 +267,7 @@ function populate() {
 
   // Gosper glider gun ship
   makeCellsAlive(
+    cells,
     [30, 10],
     [31, 10],
     [30, 11],
@@ -292,6 +291,7 @@ function populate() {
 
   // It's only half a beacon.
   makeCellsAlive(
+    cells,
     [6, 60],
     [7, 60],
     [8, 60],
