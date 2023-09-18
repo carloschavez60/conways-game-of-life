@@ -2,6 +2,7 @@
 
 const GAME_SPACE_WIDTH = 800
 const GAME_PIXEL_WIDTH = 10 // must be a value that can divide GAME_SPACE_WIDTH
+
 const GAME_SPACE_PIXEL_WIDTH = GAME_SPACE_WIDTH/GAME_PIXEL_WIDTH
 
 const GAME_FRAME_DURATION = 150 // in ms
@@ -18,6 +19,8 @@ canvas.width = GAME_SPACE_WIDTH
 canvas.height = GAME_SPACE_WIDTH
 
 const ctx = canvas.getContext('2d')
+ctx.fillStyle = 'white'
+ctx.font = '20px Arial'
 
 // event listeners
 
@@ -31,8 +34,7 @@ function setInitialGameState() {
     for (col = 0; col < GAME_SPACE_PIXEL_WIDTH; col++) {
       cells[row][col] = {
         isAlive: false,
-        hasToBeAlive: false,
-        hasToBeDead: false,
+        hasToChange: false,
       }
     }
   }
@@ -74,15 +76,14 @@ for (row = 0; row < GAME_SPACE_PIXEL_WIDTH; row++) {
   for (col = 0; col < GAME_SPACE_PIXEL_WIDTH; col++) {
     cells[row][col] = {
       isAlive: false,
-      hasToBeAlive: false,
-      hasToBeDead: false,
+      hasToChange: false,
     }
   }
 }
 
 // systems
 
-// physics system
+// check program state
 
 function checkGeneration() {
   for (row = 0; row < GAME_SPACE_PIXEL_WIDTH; row++) {
@@ -115,56 +116,53 @@ function checkGeneration() {
           neighbors++
         }
       }
+      let cell = cells[row][col]
 
       // Conway's Game Rules
-      if (neighbors < 2 || neighbors > 3) {
-        cells[row][col].hasToBeDead = true
-      } else if (neighbors === 3) {
-        cells[row][col].hasToBeAlive = true
+      if ((cell.isAlive && (neighbors < 2 || neighbors > 3)) || (!cell.isAlive && neighbors === 3)) {
+        cell.hasToChange = true
       }
     }
   }
 }
+
+// change program state
 
 function changeGeneration() {
   for (row = 0; row < GAME_SPACE_PIXEL_WIDTH; row++) {
     for (col = 0; col < GAME_SPACE_PIXEL_WIDTH; col++) {
-      if (cells[row][col].hasToBeAlive) {
-        cells[row][col].isAlive = true
-      } else if (cells[row][col].hasToBeDead) {
-        cells[row][col].isAlive = false
+      let cell = cells[row][col]
+
+      if (cell.hasToChange) {
+        cell.isAlive = !cell.isAlive
       }
 
-      // reset centinels
-      cells[row][col].hasToBeAlive = false
-      cells[row][col].hasToBeDead = false
+      // reset centinel
+      cell.hasToChange = false
     }
   }
 }
 
-// draw system
+// drawing system
 
 function drawGame() {
   drawCells()
-  drawGeneration()
+  drawGenerationText()
 }
 
 function drawCells() {
-  ctx.clearRect(0, 0, GAME_SPACE_WIDTH, GAME_SPACE_WIDTH)
-
-  ctx.fillStyle = 'white'
   for (row = 0; row < GAME_SPACE_PIXEL_WIDTH; row++) {
     for (col = 0; col < GAME_SPACE_PIXEL_WIDTH; col++) {
       if (cells[row][col].isAlive) {
         ctx.fillRect(col * GAME_PIXEL_WIDTH, row * GAME_PIXEL_WIDTH, GAME_PIXEL_WIDTH, GAME_PIXEL_WIDTH)
+      } else {
+        ctx.clearRect(col * GAME_PIXEL_WIDTH, row * GAME_PIXEL_WIDTH, GAME_SPACE_WIDTH, GAME_SPACE_WIDTH)
       }
     }
   }
 }
 
-function drawGeneration() {
-  ctx.fillStyle = 'white'
-  ctx.font = '20px Arial'
+function drawGenerationText() {
   ctx.fillText(`Generation: ${game.generation}`, 3, GAME_SPACE_WIDTH - 5)
 }
 
@@ -294,29 +292,29 @@ function populate() {
 
   // It's only half a beacon.
   makeCellsAlive(
-    [6, 40],
-    [7, 40],
-    [8, 40],
-    [12, 40],
-    [13, 40],
-    [14, 40],
-    [4, 41],
-    [9, 41],
-    [11, 41],
-    [16, 41],
-    [4, 42],
-    [9, 42],
-    [11, 42],
-    [16, 42],
-    [4, 43],
-    [9, 43],
-    [11, 43],
-    [16, 43],
-    [6, 45],
-    [7, 45],
-    [8, 45],
-    [12, 45],
-    [13, 45],
-    [14, 45],
+    [6, 60],
+    [7, 60],
+    [8, 60],
+    [12, 60],
+    [13, 60],
+    [14, 60],
+    [4, 61],
+    [9, 61],
+    [11, 61],
+    [16, 61],
+    [4, 62],
+    [9, 62],
+    [11, 62],
+    [16, 62],
+    [4, 63],
+    [9, 63],
+    [11, 63],
+    [16, 63],
+    [6, 65],
+    [7, 65],
+    [8, 65],
+    [12, 65],
+    [13, 65],
+    [14, 65],
   )
 }
