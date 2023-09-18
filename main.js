@@ -6,88 +6,12 @@ const GAME_SPACE_PIXEL_WIDTH = GAME_SPACE_WIDTH/GAME_PIXEL_WIDTH
 
 const GAME_FRAME_DURATION = 150 // in ms
 
-const game = {
+let game = {
   mainLoopIsRunning: false,
   generation: 0,
 }
 
-// entities
-
-const cells = []
-for (x = 0; x < GAME_SPACE_PIXEL_WIDTH; x++) {
-  cells[x] = []
-  for (y = 0; y < GAME_SPACE_PIXEL_WIDTH; y++) {
-    cells[x][y] = {
-      isAlive: false,
-      hasToBeAlive: false,
-      hasToBeDead: false,
-    }
-  }
-}
-
-// systems
-
-// physics
-
-function checkGeneration() {
-  for (x = 0; x < GAME_SPACE_PIXEL_WIDTH; x++) {
-    for (y = 0; y < GAME_SPACE_PIXEL_WIDTH; y++) {
-      neighbors = 0
-      // kill edge cells
-      if (x-1>0 && x+1<GAME_SPACE_PIXEL_WIDTH && y-1>0 && y+1<GAME_SPACE_PIXEL_WIDTH) {
-        if (cells[x-1][y-1].isAlive) {
-          neighbors++
-        }
-        if (cells[x][y-1].isAlive) {
-          neighbors++
-        }
-        if (cells[x+1][y-1].isAlive) {
-          neighbors++
-        }
-        if (cells[x-1][y].isAlive) {
-          neighbors++
-        }
-        if (cells[x+1][y].isAlive) {
-          neighbors++
-        }
-        if (cells[x-1][y+1].isAlive) {
-          neighbors++
-        }
-        if (cells[x][y+1].isAlive) {
-          neighbors++
-        }
-        if (cells[x+1][y+1].isAlive) {
-          neighbors++
-        }
-      }
-
-      // Conway's Game Rules
-      if (neighbors < 2 || neighbors > 3) {
-        cells[x][y].hasToBeDead = true
-      } else if (neighbors === 3) {
-        cells[x][y].hasToBeAlive = true
-      }
-    }
-  }
-}
-
-function changeGeneration() {
-  for (x = 0; x < GAME_SPACE_PIXEL_WIDTH; x++) {
-    for (y = 0; y < GAME_SPACE_PIXEL_WIDTH; y++) {
-      if (cells[x][y].hasToBeAlive) {
-        cells[x][y].isAlive = true
-      } else if (cells[x][y].hasToBeDead) {
-        cells[x][y].isAlive = false
-      }
-
-      // reset centinels
-      cells[x][y].hasToBeAlive = false
-      cells[x][y].hasToBeDead = false
-    }
-  }
-}
-
-// draw system
+// draw system tools
 
 const canvas = document.querySelector('canvas')
 canvas.width = GAME_SPACE_WIDTH
@@ -95,37 +19,17 @@ canvas.height = GAME_SPACE_WIDTH
 
 const ctx = canvas.getContext('2d')
 
-function drawGame() {
-  drawCells()
-  drawGeneration()
-}
+// event listeners
 
-function drawCells() {
-  ctx.clearRect(0, 0, GAME_SPACE_WIDTH, GAME_SPACE_WIDTH)
-
-  ctx.fillStyle = 'white'
-  for (y = 0; y < GAME_SPACE_PIXEL_WIDTH; y++) {
-    for (x = 0; x < GAME_SPACE_PIXEL_WIDTH; x++) {
-      if (cells[x][y].isAlive) {
-        ctx.fillRect(x * GAME_PIXEL_WIDTH, y * GAME_PIXEL_WIDTH, GAME_PIXEL_WIDTH, GAME_PIXEL_WIDTH)
-      }
-    }
-  }
-}
-
-function drawGeneration() {
-  ctx.fillStyle = 'white'
-  ctx.font = '20px Arial'
-  ctx.fillText(`Generation: ${game.generation}`, 3, GAME_SPACE_WIDTH - 5)
-}
+document.querySelector('button').addEventListener('click', setInitialGameState)
 
 // set initial state
 
 function setInitialGameState() {
-  for (x = 0; x < GAME_SPACE_PIXEL_WIDTH; x++) {
-    cells[x] = []
-    for (y = 0; y < GAME_SPACE_PIXEL_WIDTH; y++) {
-      cells[x][y] = {
+  for (row = 0; row < GAME_SPACE_PIXEL_WIDTH; row++) {
+    cells[row] = []
+    for (col = 0; col < GAME_SPACE_PIXEL_WIDTH; col++) {
+      cells[row][col] = {
         isAlive: false,
         hasToBeAlive: false,
         hasToBeDead: false,
@@ -162,15 +66,113 @@ function mainLoop() {
   setTimeout(mainLoop, GAME_FRAME_DURATION)
 }
 
-// event listeners
+// entities
 
-document.querySelector('button').addEventListener('click', setInitialGameState)
+let cells = []
+for (row = 0; row < GAME_SPACE_PIXEL_WIDTH; row++) {
+  cells[row] = []
+  for (col = 0; col < GAME_SPACE_PIXEL_WIDTH; col++) {
+    cells[row][col] = {
+      isAlive: false,
+      hasToBeAlive: false,
+      hasToBeDead: false,
+    }
+  }
+}
+
+// systems
+
+// physics system
+
+function checkGeneration() {
+  for (row = 0; row < GAME_SPACE_PIXEL_WIDTH; row++) {
+    for (col = 0; col < GAME_SPACE_PIXEL_WIDTH; col++) {
+      neighbors = 0
+      // kill edge cells
+      if (row-1>0 && row+1<GAME_SPACE_PIXEL_WIDTH && col-1>0 && col+1<GAME_SPACE_PIXEL_WIDTH) {
+        if (cells[row-1][col-1].isAlive) {
+          neighbors++
+        }
+        if (cells[row-1][col].isAlive) {
+          neighbors++
+        }
+        if (cells[row-1][col+1].isAlive) {
+          neighbors++
+        }
+        if (cells[row][col-1].isAlive) {
+          neighbors++
+        }
+        if (cells[row][col+1].isAlive) {
+          neighbors++
+        }
+        if (cells[row+1][col-1].isAlive) {
+          neighbors++
+        }
+        if (cells[row+1][col].isAlive) {
+          neighbors++
+        }
+        if (cells[row+1][col+1].isAlive) {
+          neighbors++
+        }
+      }
+
+      // Conway's Game Rules
+      if (neighbors < 2 || neighbors > 3) {
+        cells[row][col].hasToBeDead = true
+      } else if (neighbors === 3) {
+        cells[row][col].hasToBeAlive = true
+      }
+    }
+  }
+}
+
+function changeGeneration() {
+  for (row = 0; row < GAME_SPACE_PIXEL_WIDTH; row++) {
+    for (col = 0; col < GAME_SPACE_PIXEL_WIDTH; col++) {
+      if (cells[row][col].hasToBeAlive) {
+        cells[row][col].isAlive = true
+      } else if (cells[row][col].hasToBeDead) {
+        cells[row][col].isAlive = false
+      }
+
+      // reset centinels
+      cells[row][col].hasToBeAlive = false
+      cells[row][col].hasToBeDead = false
+    }
+  }
+}
+
+// draw system
+
+function drawGame() {
+  drawCells()
+  drawGeneration()
+}
+
+function drawCells() {
+  ctx.clearRect(0, 0, GAME_SPACE_WIDTH, GAME_SPACE_WIDTH)
+
+  ctx.fillStyle = 'white'
+  for (row = 0; row < GAME_SPACE_PIXEL_WIDTH; row++) {
+    for (col = 0; col < GAME_SPACE_PIXEL_WIDTH; col++) {
+      if (cells[row][col].isAlive) {
+        ctx.fillRect(col * GAME_PIXEL_WIDTH, row * GAME_PIXEL_WIDTH, GAME_PIXEL_WIDTH, GAME_PIXEL_WIDTH)
+      }
+    }
+  }
+}
+
+function drawGeneration() {
+  ctx.fillStyle = 'white'
+  ctx.font = '20px Arial'
+  ctx.fillText(`Generation: ${game.generation}`, 3, GAME_SPACE_WIDTH - 5)
+}
 
 // populate world
 
 function makeCellsAlive(...cellsCoords) {
-  for (const cellCoords of cellsCoords) {
-    cells[cellCoords[0]][cellCoords[1]].isAlive = true
+  for (let cellCoords of cellsCoords) {
+    cells[cellCoords[1]][cellCoords[0]].isAlive = true
   }
 }
 
@@ -290,7 +292,7 @@ function populate() {
     [42, 14],
   )
 
-  // Wtf. I just discovered it.
+  // It's only half a beacon.
   makeCellsAlive(
     [6, 40],
     [7, 40],
