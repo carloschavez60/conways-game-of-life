@@ -1,32 +1,33 @@
-// game constants and variables
+// game constants
 
 const GAME_SPACE_WIDTH = 800
 const GAME_PIXEL_WIDTH = 10 // must be a value that can divide GAME_SPACE_WIDTH
+const GAME_FRAME_DURATION = 150 // in ms
 
 const GAME_SPACE_PIXEL_WIDTH = GAME_SPACE_WIDTH/GAME_PIXEL_WIDTH
 
-const GAME_FRAME_DURATION = 150 // in ms
-
-let game = {
-  mainLoopIsRunning: false,
-  generation: 0,
-}
-
-// draw system tools
+// drawing system tools
 
 const canvas = document.querySelector('canvas')
 canvas.width = GAME_SPACE_WIDTH
 canvas.height = GAME_SPACE_WIDTH
 
 const ctx = canvas.getContext('2d')
-ctx.fillStyle = 'white'
-ctx.font = '20px Arial';
+ctx.fillStyle = 'white';
 
 // set initial app state
 
 (function main() {
+  let [game, cells] = createEntities()
 
-  // create entities
+  document.querySelector('button').addEventListener('click', () => setInitialGameState(game, cells))
+})()
+
+function createEntities() {
+  let game = {
+    mainLoopIsRunning: false,
+    generation: 0,
+  }
 
   let cells = []
   for (let row = 0; row < GAME_SPACE_PIXEL_WIDTH; row++) {
@@ -39,25 +40,20 @@ ctx.font = '20px Arial';
     }
   }
 
-  // add event listeners
+  return [game, cells]
+}
 
-  document.querySelector('button').addEventListener('click', () => setInitialGameState(cells))
+function setInitialGameState(game, cells) {
 
-})()
-
-function setInitialGameState(cells) {
-
-  setInitialStateOfEntities(cells)
-
-  game.generation = 0
+  setInitialStateOfEntities(game, cells)
 
   populate(cells)
 
   drawInitialStateOfGame(cells)
 
-  // call first main loop
+  // call first main loop if it isn't running
   if (!game.mainLoopIsRunning) {
-    setTimeout(() => mainLoop(cells), GAME_FRAME_DURATION)
+    setTimeout(() => mainLoop(game, cells), GAME_FRAME_DURATION)
     game.mainLoopIsRunning = true
   }
 }
@@ -65,7 +61,9 @@ function setInitialGameState(cells) {
 /**
  * impure fuction
  */
-function setInitialStateOfEntities(cells) {
+function setInitialStateOfEntities(game, cells) {
+  game.generation = 0
+
   for (let row = 0; row < GAME_SPACE_PIXEL_WIDTH; row++) {
     for (let col = 0; col < GAME_SPACE_PIXEL_WIDTH; col++) {
       let cell = cells[row][col]
@@ -77,18 +75,16 @@ function setInitialStateOfEntities(cells) {
 
 // main loop
 
-function mainLoop(cells) {
+function mainLoop(game, cells) {
   // check world
   checkGeneration(cells)
 
-  // change world
-  // changeGeneration(cells)
+  // change and draw world
   game.generation++
+  drawAndChangeCells(cells)
+  drawGenerationText(game.generation)
 
-  // draw world
-  drawGame(cells)
-
-  setTimeout(() => mainLoop(cells), GAME_FRAME_DURATION)
+  setTimeout(() => mainLoop(game, cells), GAME_FRAME_DURATION)
 }
 
 // systems
@@ -151,12 +147,7 @@ function drawInitialStateOfGame(cells) {
   }
 }
 
-function drawGame(cells) {
-  drawCells(cells)
-  drawGenerationText()
-}
-
-function drawCells(cells) {
+function drawAndChangeCells(cells) {
   for (let row = 0; row < GAME_SPACE_PIXEL_WIDTH; row++) {
     for (let col = 0; col < GAME_SPACE_PIXEL_WIDTH; col++) {
       let cell = cells[row][col]
@@ -177,7 +168,7 @@ function drawCells(cells) {
       //   cell.isAlive = !cell.isAlive
       // }
       // cell.hasToChange = false
-      //draw
+      // draw
       // if (cell.isAlive) {
       //   ctx.fillRect(col * GAME_PIXEL_WIDTH, row * GAME_PIXEL_WIDTH, GAME_PIXEL_WIDTH, GAME_PIXEL_WIDTH)
       // } else {
@@ -187,8 +178,8 @@ function drawCells(cells) {
   }
 }
 
-function drawGenerationText() {
-  ctx.fillText(`Generation: ${game.generation}`, 3, GAME_SPACE_WIDTH - 5)
+function drawGenerationText(generation) {
+  document.querySelector('span').textContent = `${generation}`
 }
 
 // populate world
