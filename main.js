@@ -20,17 +20,13 @@ canvas.height = GAME_SPACE_WIDTH
 
 const ctx = canvas.getContext('2d')
 ctx.fillStyle = 'white'
-ctx.font = '20px Arial'
+ctx.font = '20px Arial';
 
-// event listeners
+// set initial app state
 
-document.querySelector('button').addEventListener('click', setInitialGameState)
+(function main() {
 
-// set initial state
-
-function setInitialGameState() {
-
-  // entities
+  // create entities
 
   let cells = []
   for (let row = 0; row < GAME_SPACE_PIXEL_WIDTH; row++) {
@@ -43,17 +39,39 @@ function setInitialGameState() {
     }
   }
 
+  // add event listeners
+
+  document.querySelector('button').addEventListener('click', () => setInitialGameState(cells))
+
+})()
+
+function setInitialGameState(cells) {
+
+  setInitialStateOfEntities(cells)
+
   game.generation = 0
 
   populate(cells)
 
-  // draw world
-  drawGame(cells)
+  drawInitialStateOfGame(cells)
 
   // call first main loop
   if (!game.mainLoopIsRunning) {
     setTimeout(() => mainLoop(cells), GAME_FRAME_DURATION)
     game.mainLoopIsRunning = true
+  }
+}
+
+/**
+ * impure fuction
+ */
+function setInitialStateOfEntities(cells) {
+  for (let row = 0; row < GAME_SPACE_PIXEL_WIDTH; row++) {
+    for (let col = 0; col < GAME_SPACE_PIXEL_WIDTH; col++) {
+      let cell = cells[row][col]
+      cell.isAlive = false
+      cell.hasToChange = false
+    }
   }
 }
 
@@ -64,7 +82,7 @@ function mainLoop(cells) {
   checkGeneration(cells)
 
   // change world
-  changeGeneration(cells)
+  // changeGeneration(cells)
   game.generation++
 
   // draw world
@@ -118,24 +136,20 @@ function checkGeneration(cells) {
   }
 }
 
-// change program state
+// drawing system
 
-function changeGeneration(cells) {
+function drawInitialStateOfGame(cells) {
   for (let row = 0; row < GAME_SPACE_PIXEL_WIDTH; row++) {
     for (let col = 0; col < GAME_SPACE_PIXEL_WIDTH; col++) {
       let cell = cells[row][col]
-
-      if (cell.hasToChange) {
-        cell.isAlive = !cell.isAlive
+      if (cell.isAlive) {
+        ctx.fillRect(col * GAME_PIXEL_WIDTH, row * GAME_PIXEL_WIDTH, GAME_PIXEL_WIDTH, GAME_PIXEL_WIDTH)
+      } else {
+        ctx.clearRect(col * GAME_PIXEL_WIDTH, row * GAME_PIXEL_WIDTH, GAME_PIXEL_WIDTH, GAME_PIXEL_WIDTH)
       }
-
-      // reset centinel
-      cell.hasToChange = false
     }
   }
 }
-
-// drawing system
 
 function drawGame(cells) {
   drawCells(cells)
@@ -145,11 +159,30 @@ function drawGame(cells) {
 function drawCells(cells) {
   for (let row = 0; row < GAME_SPACE_PIXEL_WIDTH; row++) {
     for (let col = 0; col < GAME_SPACE_PIXEL_WIDTH; col++) {
-      if (cells[row][col].isAlive) {
-        ctx.fillRect(col * GAME_PIXEL_WIDTH, row * GAME_PIXEL_WIDTH, GAME_PIXEL_WIDTH, GAME_PIXEL_WIDTH)
-      } else {
-        ctx.clearRect(col * GAME_PIXEL_WIDTH, row * GAME_PIXEL_WIDTH, GAME_SPACE_WIDTH, GAME_SPACE_WIDTH)
+      let cell = cells[row][col]
+      if (cell.hasToChange) {
+        if (cell.isAlive) {
+          cell.isAlive = false
+          ctx.clearRect(col * GAME_PIXEL_WIDTH, row * GAME_PIXEL_WIDTH, GAME_PIXEL_WIDTH, GAME_PIXEL_WIDTH)
+        } else {
+          cell.isAlive = true
+          ctx.fillRect(col * GAME_PIXEL_WIDTH, row * GAME_PIXEL_WIDTH, GAME_PIXEL_WIDTH, GAME_PIXEL_WIDTH)
+        }
       }
+      cell.hasToChange = false
+
+      // old system
+      // change
+      // if (cell.hasToChange) {
+      //   cell.isAlive = !cell.isAlive
+      // }
+      // cell.hasToChange = false
+      //draw
+      // if (cell.isAlive) {
+      //   ctx.fillRect(col * GAME_PIXEL_WIDTH, row * GAME_PIXEL_WIDTH, GAME_PIXEL_WIDTH, GAME_PIXEL_WIDTH)
+      // } else {
+      //   ctx.clearRect(col * GAME_PIXEL_WIDTH, row * GAME_PIXEL_WIDTH, GAME_SPACE_WIDTH, GAME_SPACE_WIDTH)
+      // }
     }
   }
 }
